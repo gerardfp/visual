@@ -70,7 +70,7 @@
       for (const item of items) {
         const opt = document.createElement('option');
         opt.value = item.id;
-        opt.textContent = item.title;
+        opt.textContent = item.title.replace(/\s*\([^)]*\)/g, '').trim();
         optgroup.appendChild(opt);
       }
       algoSelect.appendChild(optgroup);
@@ -411,7 +411,7 @@
     if (currentStepIdx >= steps.length - 1) {
       goToStep(0);
     }
-    btnPlay.textContent = '⏸ Pausar';
+    btnPlay.textContent = '⏸';
     const intervalMs = Number(speedSelect.value) || 650;
 
     playTimer = setInterval(() => {
@@ -433,7 +433,7 @@
       clearInterval(playTimer);
       playTimer = null;
     }
-    btnPlay.textContent = '▶ Reproducir';
+    btnPlay.textContent = '▶';
   }
 
   function togglePlayback() {

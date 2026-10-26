@@ -7,70 +7,49 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Cabecera Principal -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-logo" aria-hidden="true">Py</div>
-      <div>
-        <h1 class="brand-title">PyVisual</h1>
-        <p class="brand-subtitle">Algoritmos y Estructuras de Datos paso a paso</p>
-      </div>
-    </div>
+  <!-- Barra Única Superior de Selección y Reproducción -->
+  <header class="topbar player-bar" aria-label=" Barra de herramientas y controles de ejecución">
+    <div class="toolbar-group">
+      <select id="algo-select" class="algo-select" aria-label="Seleccionar algoritmo" title="Seleccionar algoritmo"></select>
 
-    <div class="topbar-controls">
-      <label class="algo-picker-label" for="algo-select">
-        <span>Algoritmo:</span>
-        <select id="algo-select" class="algo-select" aria-label="Seleccionar algoritmo"></select>
-      </label>
-
-      <button type="button" id="btn-algo-info" class="btn btn-secondary" title="Ver información y complejidad del algoritmo seleccionado">
-        ℹ️ Info
+      <button type="button" id="btn-algo-info" class="btn btn-icon" aria-label="Información del algoritmo" title="Ver información y complejidad del algoritmo seleccionado">
+        ℹ️
       </button>
 
-      <button type="button" id="btn-random-input" class="btn btn-secondary" title="Generar nuevos datos de prueba para este algoritmo">
-        🎲 Datos aleatorios
+      <button type="button" id="btn-random-input" class="btn btn-icon" aria-label="Generar datos aleatorios" title="Generar nuevos datos de prueba para este algoritmo">
+        🎲
       </button>
 
-      <button type="button" id="btn-reset-code" class="btn btn-secondary" title="Restaurar el código original del algoritmo">
-        ↺ Restaurar código
+      <button type="button" id="btn-reset-code" class="btn btn-icon" aria-label="Restaurar código original" title="Restaurar el código original del algoritmo">
+        ↺
       </button>
 
-      <button type="button" id="btn-subset-help" class="btn btn-secondary" title="Ver el subset de Python soportado (extraído de code.py)">
-        📖 Subset Python
-      </button>
-
-      <button type="button" id="btn-theme-toggle" class="btn btn-icon" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro u oscuro">
-        🌗
+      <button type="button" id="btn-run-code" class="btn btn-accent btn-icon" aria-label="Actualizar y ejecutar código" title="Compilar cambios del editor y reiniciar ejecución">
+        ⚡
       </button>
     </div>
-  </header>
 
-  <!-- Barra de Controles de Ejecución Paso a Paso -->
-  <section class="player-bar" aria-label="Controles de ejecución paso a paso">
     <div class="transport-buttons">
-      <button type="button" id="btn-run-code" class="btn btn-accent" title="Compilar cambios del editor y reiniciar ejecución">
-        ⚡ Actualizar y Ejecutar
+      <button type="button" id="btn-first" class="btn btn-transport btn-icon" aria-label="Ir al primer paso" title="Ir al primer paso (Inicio)">
+        ⏮
       </button>
-      <button type="button" id="btn-first" class="btn btn-transport" title="Ir al primer paso (Inicio)">
-        ⏮ Inicio
+      <button type="button" id="btn-prev" class="btn btn-transport btn-icon" aria-label="Paso anterior" title="Paso anterior (Flecha izquierda)">
+        ⏪
       </button>
-      <button type="button" id="btn-prev" class="btn btn-transport" title="Paso anterior (Flecha izquierda)">
-        ◀ Anterior
+      <button type="button" id="btn-play" class="btn btn-primary btn-play btn-icon" aria-label="Reproducir o pausar" title="Reproducir / Pausar ejecución automática (Espacio)">
+        ▶
       </button>
-      <button type="button" id="btn-play" class="btn btn-primary btn-play" title="Reproducir / Pausar ejecución automática (Espacio)">
-        ▶ Reproducir
+      <button type="button" id="btn-next" class="btn btn-transport btn-icon" aria-label="Siguiente paso" title="Siguiente paso (Flecha derecha)">
+        ⏩
       </button>
-      <button type="button" id="btn-next" class="btn btn-transport" title="Siguiente paso (Flecha derecha)">
-        Siguiente ▶
+      <button type="button" id="btn-step-over" class="btn btn-transport btn-icon" aria-label="Saltar sobre llamada recursiva" title="Saltar sobre llamada recursiva (Step Over)">
+        ⤵
       </button>
-      <button type="button" id="btn-step-over" class="btn btn-transport" title="Saltar sobre llamada recursiva (Step Over)">
-        ⤵ Saltar llamada
+      <button type="button" id="btn-step-out" class="btn btn-transport btn-icon" aria-label="Salir de la función actual" title="Salir de la función actual (Step Out)">
+        ⤴
       </button>
-      <button type="button" id="btn-step-out" class="btn btn-transport" title="Salir de la función actual (Step Out)">
-        ⤴ Salir función
-      </button>
-      <button type="button" id="btn-last" class="btn btn-transport" title="Ir al último paso (Final)">
-        ⏭ Final
+      <button type="button" id="btn-last" class="btn btn-transport btn-icon" aria-label="Ir al último paso" title="Ir al último paso (Final)">
+        ⏭
       </button>
     </div>
 
@@ -87,16 +66,23 @@
       />
     </div>
 
-    <div class="speed-group">
-      <label for="speed-select" class="speed-label">Velocidad:</label>
-      <select id="speed-select" class="speed-select">
-        <option value="1200">0.5x (Lento)</option>
-        <option value="650" selected>1x (Normal)</option>
-        <option value="320">2x (Rápido)</option>
-        <option value="120">4x (Turbo)</option>
+    <div class="toolbar-group">
+      <select id="speed-select" class="speed-select" aria-label="Velocidad de reproducción" title="Velocidad de reproducción">
+        <option value="1200">0.5x</option>
+        <option value="650" selected>1x</option>
+        <option value="320">2x</option>
+        <option value="120">4x</option>
       </select>
+
+      <button type="button" id="btn-subset-help" class="btn btn-icon" aria-label="Ver subset de Python soportado" title="Ver el subset de Python soportado (extraído de code.py)">
+        📖
+      </button>
+
+      <button type="button" id="btn-theme-toggle" class="btn btn-icon" aria-label="Cambiar tema claro u oscuro" title="Cambiar tema claro/oscuro">
+        🌗
+      </button>
     </div>
-  </section>
+  </header>
 
   <!-- Contenedor Principal en 2 Columnas -->
   <main class="workspace">
