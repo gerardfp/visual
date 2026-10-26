@@ -105,20 +105,216 @@
     return steps[currentStepIdx].line;
   }
 
+  // --- Resaltador de Sintaxis para el Subset de Python ---
+  const SYN_KEYWORDS = new Set([
+    'def', 'return', 'if', 'elif', 'else', 'while', 'for', 'in',
+    'and', 'or', 'not', 'is', 'class', 'continue', 'break',
+    'global', 'import', 'from', 'raise', 'pass'
+  ]);
+
+  const SYN_CONSTANTS = new Set(['True', 'False', 'None', 'self']);
+
+  const SYN_BUILTINS = new Set([
+    'len', 'range', 'max', 'min', 'print', 'list', 'set', 'dict', 'tuple',
+    'deque', 'float', 'int', 'str', 'sorted', 'abs', 'sum', 'ValueError',
+    'heapq', 'collections'
+  ]);
+
+  function escapeCodeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function highlightFStringContent(raw, quote) {
+    let out = `<span class="tok-string">f${quote}`;
+    let i = 0;
+    while (i < raw.length) {
+      if (raw[i] === '{') {
+        out += `</span><span class="tok-interp">{`;
+        i++;
+        let depth = 1;
+        let inner = '';
+        while (i < raw.length && depth > 0) {
+          if (raw[i] === '{') depth++;
+          else if (raw[i] === '}') depth--;
+          if (depth > 0) inner += raw[i];
+          i++;
+        }
+        out += escapeCodeHtml(inner) + (depth === 0 ? '}' : '') + `</span><span class="tok-string">`;
+      } else {
+        out += escapeCodeHtml(raw[i++]);
+      }
+    }
+    out += `${quote}</span>`;
+    return out;
+  }
+
+  function highlightPythonLine(line) {
+    if (!line) return ' ';
+    let out = '';
+    let pos = 0;
+    let prevToken = '';
+
+    while (pos < line.length) {
+      const ch = line[pos];
+
+      // Espacios y tabuladores
+      if (ch === ' ' || ch === '\t') {
+        out += ch;
+        pos++;
+        continue;
+      }
+
+      // Comentarios (# ...)
+      if (ch === '#') {
+        out += `<span class="tok-comment">${escapeCodeHtml(line.slice(pos))}</span>`;
+        break;
+      }
+
+      // F-strings: f"..." o f'...'
+      if ((ch === 'f' || ch === 'F') && (line[pos + 1] === '"' || line[pos + 1] === "'")) {
+        const quote = line[pos + 1];
+        pos += 2;
+        let content = '';
+        let closed = false;
+        while (pos < line.length) {
+          if (line[pos] === '\\' && pos + 1 < line.length) {
+            content += line[pos] + line[pos + 1];
+            pos += 2;
+          } else if (line[pos] === quote) {
+            closed = true;
+            pos++;
+            break;
+          } else {
+            content += line[pos++];
+          }
+        }
+        if (closed) {
+          out += highlightFStringContent(content, quote);
+        } else {
+          out += `<span class="tok-string">f${quote}${escapeCodeHtml(content)}</span>`;
+        }
+        prevToken = 'STRING';
+        continue;
+      }
+
+      // Cadenas normales: "..." o '...'
+      if (ch === '"' || ch === "'") {
+        const quote = ch;
+        let raw = quote;
+        pos++;
+        while (pos < line.length) {
+          if (line[pos] === '\\' && pos + 1 < line.length) {
+            raw += line[pos] + line[pos + 1];
+            pos += 2;
+          } else if (line[pos] === quote) {
+            raw += quote;
+            pos++;
+            break;
+          } else {
+            raw += line[pos++];
+          }
+        }
+        out += `<span class="tok-string">${escapeCodeHtml(raw)}</span>`;
+        prevToken = 'STRING';
+        continue;
+      }
+
+      // Números
+      if (/[0-9]/.test(ch)) {
+        let num = '';
+        while (pos < line.length && /[0-9.]/.test(line[pos])) {
+          num += line[pos++];
+        }
+        out += `<span class="tok-number">${num}</span>`;
+        prevToken = num;
+        continue;
+      }
+
+      // Identificadores y palabras clave
+      if (/[a-zA-Z_]/.test(ch)) {
+        let ident = '';
+        while (pos < line.length && /[a-zA-Z0-9_]/.test(line[pos])) {
+          ident += line[pos++];
+        }
+
+        if (prevToken === 'def' || prevToken === 'class') {
+          out += `<span class="tok-defname">${ident}</span>`;
+        } else if (SYN_KEYWORDS.has(ident)) {
+          out += `<span class="tok-keyword">${ident}</span>`;
+        } else if (SYN_CONSTANTS.has(ident)) {
+          out += `<span class="tok-constant">${ident}</span>`;
+        } else if (SYN_BUILTINS.has(ident)) {
+          out += `<span class="tok-builtin">${ident}</span>`;
+        } else if (prevToken === '.') {
+          out += `<span class="tok-method">${ident}</span>`;
+        } else if (line[pos] === '(') {
+          out += `<span class="tok-func">${ident}</span>`;
+        } else {
+          out += ident;
+        }
+        prevToken = ident;
+        continue;
+      }
+
+      // Operadores multicarácter
+      const three = line.slice(pos, pos + 3);
+      if (three === '//=' || three === '**=') {
+        out += `<span class="tok-op">${three}</span>`;
+        pos += 3;
+        prevToken = three;
+        continue;
+      }
+
+      const two = line.slice(pos, pos + 2);
+      if (['==', '!=', '<=', '>=', '//', '**', '+=', '-=', '*=', '/=', '%='].includes(two)) {
+        out += `<span class="tok-op">${escapeCodeHtml(two)}</span>`;
+        pos += 2;
+        prevToken = two;
+        continue;
+      }
+
+      if (['+', '-', '*', '/', '%', '<', '>', '='].includes(ch)) {
+        out += `<span class="tok-op">${escapeCodeHtml(ch)}</span>`;
+        pos++;
+        prevToken = ch;
+        continue;
+      }
+
+      if (['(', ')', '[', ']', '{', '}'].includes(ch)) {
+        out += `<span class="tok-bracket">${ch}</span>`;
+        pos++;
+        prevToken = ch;
+        continue;
+      }
+
+      out += escapeCodeHtml(ch);
+      prevToken = ch;
+      pos++;
+    }
+
+    return out;
+  }
+
   function renderGutterAndBackdrop(lineCount, activeLine) {
+    const lines = codeTextarea.value.split('\n');
+    const total = Math.max(lineCount, lines.length);
     let gutterHtml = '';
     let backdropHtml = '';
 
-    for (let i = 1; i <= lineCount; i++) {
+    for (let i = 1; i <= total; i++) {
       const isCurrent = i === activeLine;
       const hasBp = breakpoints.has(i);
+      const rawLine = lines[i - 1] ?? '';
       gutterHtml += `
         <div class="gutter-line ${isCurrent ? 'gutter-active' : ''} ${hasBp ? 'has-breakpoint' : ''}" data-line="${i}" title="Clic para activar/desactivar breakpoint en línea ${i}">
           <span class="bp-dot"></span>
           <span>${i}</span>
         </div>
       `;
-      backdropHtml += `<div class="backdrop-line ${isCurrent ? 'line-current' : ''}"></div>`;
+      backdropHtml += `<div class="backdrop-line ${isCurrent ? 'line-current' : ''}">${highlightPythonLine(rawLine)}</div>`;
     }
 
     lineGutter.innerHTML = gutterHtml;
@@ -438,6 +634,11 @@
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const isCurrentlyDark = current === 'dark' || (!current && prefersDark);
     html.setAttribute('data-theme', isCurrentlyDark ? 'light' : 'dark');
+  });
+
+  // Resaltar ejemplos de código en el modal de documentación del subset
+  document.querySelectorAll('.subset-box code').forEach((codeEl) => {
+    codeEl.innerHTML = highlightPythonLine(codeEl.textContent);
   });
 
   // Inicializar aplicación

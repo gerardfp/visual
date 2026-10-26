@@ -54,6 +54,40 @@
   --color-visited: #0d9488;
   --color-danger: #ef4444;
 
+  /* Paleta de Resaltado de Sintaxis Python (Light / Dark) */
+  --syn-keyword-light: #7c3aed;
+  --syn-constant-light: #0284c7;
+  --syn-builtin-light: #0d9488;
+  --syn-defname-light: #1d4ed8;
+  --syn-func-light: #2563eb;
+  --syn-string-light: #15803d;
+  --syn-interp-light: #b45309;
+  --syn-number-light: #c2410c;
+  --syn-comment-light: #64748b;
+  --syn-op-light: #be185d;
+
+  --syn-keyword-dark: #c084fc;
+  --syn-constant-dark: #38bdf8;
+  --syn-builtin-dark: #2dd4bf;
+  --syn-defname-dark: #60a5fa;
+  --syn-func-dark: #93c5fd;
+  --syn-string-dark: #4ade80;
+  --syn-interp-dark: #fbbf24;
+  --syn-number-dark: #fb923c;
+  --syn-comment-dark: #64748b;
+  --syn-op-dark: #f472b6;
+
+  --syn-keyword: var(--syn-keyword-light);
+  --syn-constant: var(--syn-constant-light);
+  --syn-builtin: var(--syn-builtin-light);
+  --syn-defname: var(--syn-defname-light);
+  --syn-func: var(--syn-func-light);
+  --syn-string: var(--syn-string-light);
+  --syn-interp: var(--syn-interp-light);
+  --syn-number: var(--syn-number-light);
+  --syn-comment: var(--syn-comment-light);
+  --syn-op: var(--syn-op-light);
+
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --editor-line-height: 24px;
@@ -72,6 +106,16 @@
     --accent-hover: var(--accent-hover-dark);
     --scrollbar-thumb: var(--scrollbar-thumb-dark);
     --scrollbar-track: var(--scrollbar-track-dark);
+    --syn-keyword: var(--syn-keyword-dark);
+    --syn-constant: var(--syn-constant-dark);
+    --syn-builtin: var(--syn-builtin-dark);
+    --syn-defname: var(--syn-defname-dark);
+    --syn-func: var(--syn-func-dark);
+    --syn-string: var(--syn-string-dark);
+    --syn-interp: var(--syn-interp-dark);
+    --syn-number: var(--syn-number-dark);
+    --syn-comment: var(--syn-comment-dark);
+    --syn-op: var(--syn-op-dark);
   }
 
   @supports (color: light-dark(white, black)) {
@@ -86,6 +130,16 @@
     --accent-hover: light-dark(var(--accent-hover-light), var(--accent-hover-dark));
     --scrollbar-thumb: light-dark(var(--scrollbar-thumb-light), var(--scrollbar-thumb-dark));
     --scrollbar-track: light-dark(var(--scrollbar-track-light), var(--scrollbar-track-dark));
+    --syn-keyword: light-dark(var(--syn-keyword-light), var(--syn-keyword-dark));
+    --syn-constant: light-dark(var(--syn-constant-light), var(--syn-constant-dark));
+    --syn-builtin: light-dark(var(--syn-builtin-light), var(--syn-builtin-dark));
+    --syn-defname: light-dark(var(--syn-defname-light), var(--syn-defname-dark));
+    --syn-func: light-dark(var(--syn-func-light), var(--syn-func-dark));
+    --syn-string: light-dark(var(--syn-string-light), var(--syn-string-dark));
+    --syn-interp: light-dark(var(--syn-interp-light), var(--syn-interp-dark));
+    --syn-number: light-dark(var(--syn-number-light), var(--syn-number-dark));
+    --syn-comment: light-dark(var(--syn-comment-light), var(--syn-comment-dark));
+    --syn-op: light-dark(var(--syn-op-light), var(--syn-op-dark));
   }
 
   accent-color: var(--accent-color);
@@ -104,6 +158,16 @@ html[data-theme="light"] {
   --accent-hover: var(--accent-hover-light);
   --scrollbar-thumb: var(--scrollbar-thumb-light);
   --scrollbar-track: var(--scrollbar-track-light);
+  --syn-keyword: var(--syn-keyword-light);
+  --syn-constant: var(--syn-constant-light);
+  --syn-builtin: var(--syn-builtin-light);
+  --syn-defname: var(--syn-defname-light);
+  --syn-func: var(--syn-func-light);
+  --syn-string: var(--syn-string-light);
+  --syn-interp: var(--syn-interp-light);
+  --syn-number: var(--syn-number-light);
+  --syn-comment: var(--syn-comment-light);
+  --syn-op: var(--syn-op-light);
 }
 
 html[data-theme="dark"] {
@@ -119,6 +183,16 @@ html[data-theme="dark"] {
   --accent-hover: var(--accent-hover-dark);
   --scrollbar-thumb: var(--scrollbar-thumb-dark);
   --scrollbar-track: var(--scrollbar-track-dark);
+  --syn-keyword: var(--syn-keyword-dark);
+  --syn-constant: var(--syn-constant-dark);
+  --syn-builtin: var(--syn-builtin-dark);
+  --syn-defname: var(--syn-defname-dark);
+  --syn-func: var(--syn-func-dark);
+  --syn-string: var(--syn-string-dark);
+  --syn-interp: var(--syn-interp-dark);
+  --syn-number: var(--syn-number-dark);
+  --syn-comment: var(--syn-comment-dark);
+  --syn-op: var(--syn-op-dark);
 }
 
 * {
@@ -533,7 +607,7 @@ body {
 .code-area-wrapper {
   position: relative;
   flex: 1;
-  min-width: 100%;
+  min-width: max-content;
 }
 
 .code-backdrop {
@@ -544,16 +618,26 @@ body {
   padding: 0.75rem 0;
   pointer-events: none;
   z-index: 1;
+  font-family: var(--font-mono);
+  font-size: var(--editor-font-size);
+  line-height: var(--editor-line-height);
+  font-weight: 500;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  tab-size: 4;
+  color: var(--text-main);
 }
 
 .backdrop-line {
   height: var(--editor-line-height);
   width: 100%;
+  padding: 0 1rem;
+  white-space: pre;
 }
 
 .backdrop-line.line-current {
   background-color: var(--color-active-line);
-  border-left: 3px solid var(--color-active-border);
+  box-shadow: inset 3px 0 0 var(--color-active-border);
 }
 
 .code-textarea {
@@ -566,13 +650,63 @@ body {
   outline: none;
   resize: none;
   background: transparent;
-  color: var(--text-main);
+  color: transparent;
+  caret-color: var(--text-main);
   font-family: var(--font-mono);
   font-size: var(--editor-font-size);
   line-height: var(--editor-line-height);
+  font-weight: 500;
+  font-variant-ligatures: none;
+  letter-spacing: 0;
   white-space: pre;
   overflow: hidden;
   tab-size: 4;
+}
+
+/* Clases de Tokens de Resaltado de Sintaxis Python */
+.tok-keyword {
+  color: var(--syn-keyword);
+}
+
+.tok-constant {
+  color: var(--syn-constant);
+}
+
+.tok-builtin {
+  color: var(--syn-builtin);
+}
+
+.tok-defname {
+  color: var(--syn-defname);
+}
+
+.tok-func,
+.tok-method {
+  color: var(--syn-func);
+}
+
+.tok-string {
+  color: var(--syn-string);
+}
+
+.tok-interp {
+  color: var(--syn-interp);
+}
+
+.tok-number {
+  color: var(--syn-number);
+}
+
+.tok-comment {
+  color: var(--syn-comment);
+}
+
+.tok-op {
+  color: var(--syn-op);
+}
+
+.tok-bracket {
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
