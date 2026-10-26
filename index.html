@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PyVisual — Visualizador de Algoritmos y Estructuras de Datos en Python</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Cabecera Principal -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">Py</div>
+      <div>
+        <h1 class="brand-title">PyVisual</h1>
+        <p class="brand-subtitle">Algoritmos y Estructuras de Datos paso a paso</p>
+      </div>
+    </div>
+
+    <div class="topbar-controls">
+      <label class="algo-picker-label" for="algo-select">
+        <span>Algoritmo:</span>
+        <select id="algo-select" class="algo-select" aria-label="Seleccionar algoritmo"></select>
+      </label>
+
+      <button type="button" id="btn-random-input" class="btn btn-secondary" title="Generar nuevos datos de prueba para este algoritmo">
+        🎲 Datos aleatorios
+      </button>
+
+      <button type="button" id="btn-reset-code" class="btn btn-secondary" title="Restaurar el código original del algoritmo">
+        ↺ Restaurar código
+      </button>
+
+      <button type="button" id="btn-subset-help" class="btn btn-secondary" title="Ver el subset de Python soportado (extraído de code.py)">
+        📖 Subset Python
+      </button>
+
+      <button type="button" id="btn-theme-toggle" class="btn btn-icon" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro u oscuro">
+        🌗
+      </button>
+    </div>
+  </header>
+
+  <!-- Barra de Controles de Ejecución Paso a Paso -->
+  <section class="player-bar" aria-label="Controles de ejecución paso a paso">
+    <div class="transport-buttons">
+      <button type="button" id="btn-first" class="btn btn-transport" title="Ir al primer paso (Inicio)">
+        ⏮ Inicio
+      </button>
+      <button type="button" id="btn-prev" class="btn btn-transport" title="Paso anterior (Flecha izquierda)">
+        ◀ Anterior
+      </button>
+      <button type="button" id="btn-play" class="btn btn-primary btn-play" title="Reproducir / Pausar ejecución automática (Espacio)">
+        ▶ Reproducir
+      </button>
+      <button type="button" id="btn-next" class="btn btn-transport" title="Siguiente paso (Flecha derecha)">
+        Siguiente ▶
+      </button>
+      <button type="button" id="btn-step-over" class="btn btn-transport" title="Saltar sobre llamada recursiva (Step Over)">
+        ⤵ Saltar llamada
+      </button>
+      <button type="button" id="btn-step-out" class="btn btn-transport" title="Salir de la función actual (Step Out)">
+        ⤴ Salir función
+      </button>
+      <button type="button" id="btn-last" class="btn btn-transport" title="Ir al último paso (Final)">
+        ⏭ Final
+      </button>
+    </div>
+
+    <div class="scrubber-group">
+      <span id="step-counter" class="step-counter">Paso 1 / 1</span>
+      <input
+        type="range"
+        id="step-slider"
+        class="step-slider"
+        min="0"
+        max="0"
+        value="0"
+        aria-label="Línea de tiempo de pasos de ejecución"
+      />
+    </div>
+
+    <div class="speed-group">
+      <label for="speed-select" class="speed-label">Velocidad:</label>
+      <select id="speed-select" class="speed-select">
+        <option value="1200">0.5x (Lento)</option>
+        <option value="650" selected>1x (Normal)</option>
+        <option value="320">2x (Rápido)</option>
+        <option value="120">4x (Turbo)</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Contenedor Principal en 2 Columnas -->
+  <main class="workspace">
+    <!-- Columna Izquierda: Información del Algoritmo + Editor de Código con Línea Activa -->
+    <section class="code-panel" aria-label="Código Python y ejecución línea a línea">
+      <div class="algo-info-banner">
+        <div class="algo-info-top">
+          <span id="algo-category-badge" class="category-badge">Ordenación</span>
+          <h2 id="algo-title" class="algo-heading">Insertion Sort</h2>
+          <span id="algo-complexity" class="complexity-badge">O(n²)</span>
+        </div>
+        <p id="algo-summary" class="algo-summary"></p>
+      </div>
+
+      <div class="editor-toolbar">
+        <div class="editor-tabs">
+          <span class="editor-tab active-tab">🐍 código.py (Editable · Clic en nº línea = Breakpoint 🔴)</span>
+        </div>
+        <button type="button" id="btn-run-code" class="btn btn-accent">
+          ⚡ Actualizar y Ejecutar
+        </button>
+      </div>
+
+      <!-- Estado del paso actual -->
+      <div id="step-status-banner" class="step-status-banner" role="status" aria-live="polite">
+        <span id="step-line-pill" class="step-line-pill">Línea 1</span>
+        <span id="step-event-desc" class="step-event-desc">Listo para ejecutar</span>
+      </div>
+
+      <!-- Banner de error si hay fallo sintáctico o de ejecución -->
+      <div id="error-banner" class="error-banner" hidden></div>
+
+      <!-- Editor superpuesto con resaltado de línea activa y breakpoints -->
+      <div class="code-editor-container" id="code-editor-scroller">
+        <div id="line-gutter" class="line-gutter" aria-hidden="true"></div>
+        <div class="code-area-wrapper">
+          <div id="code-backdrop" class="code-backdrop" aria-hidden="true"></div>
+          <textarea
+            id="code-textarea"
+            class="code-textarea"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            aria-label="Editor de código Python"
+          ></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna Derecha: Visualización Gráfica + Variables + Pila de Llamadas + Consola -->
+    <section class="viz-panel" aria-label="Visualización de estructuras de datos y variables">
+      <!-- Lienzo Gráfico Adaptativo -->
+      <div id="viz-stage" class="viz-stage scroller"></div>
+
+      <!-- Paneles Inferiores de Inspección -->
+      <div class="inspector-grid">
+        <!-- Tabla de Variables -->
+        <div class="inspector-card">
+          <div class="inspector-header">
+            <h3>🔍 Variables en Memoria</h3>
+            <span class="inspector-hint">Resaltado = modificada en este paso</span>
+          </div>
+          <div id="vars-table-container" class="inspector-body scroller"></div>
+        </div>
+
+        <!-- Pila de Llamadas y Consola -->
+        <div class="inspector-side-stack">
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <h3>📚 Pila de Llamadas (Call Stack)</h3>
+            </div>
+            <div id="call-stack-container" class="inspector-body scroller"></div>
+          </div>
+
+          <div class="inspector-card">
+            <div class="inspector-header">
+              <h3>🖥️ Salida <code>print()</code></h3>
+            </div>
+            <div id="console-container" class="console-body scroller" role="log" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Nativo <dialog> con la Especificación del Subset de Python -->
+  <dialog id="subset-dialog" class="subset-dialog">
+    <div class="dialog-header">
+      <h2>📖 Subset de Python Soportado (Extraído de <code>code.py</code>)</h2>
+      <button type="button" id="btn-close-dialog" class="btn btn-icon" aria-label="Cerrar ventana">✕</button>
+    </div>
+    <div class="dialog-body scroller">
+      <p class="dialog-intro">
+        El intérprete paso a paso ejecuta en el navegador el subset específico de Python empleado en los algoritmos de <code>code.py</code>:
+      </p>
+      <div class="subset-grid">
+        <div class="subset-box">
+          <h4>1. Sentencias y Control de Flujo</h4>
+          <ul>
+            <li>Funciones y recursión: <code>def fn(a, b=0):</code> y <code>return x, y</code></li>
+            <li>Clases y nodos enlazados: <code>class Node:</code> con <code>def __init__(self, key):</code></li>
+            <li>Condicionales: <code>if</code>, <code>elif</code>, <code>else</code> (multilínea o en una línea)</li>
+            <li>Bucles: <code>for x in ...:</code> (con desempaquetado <code>for u, v, w in edges:</code>) y <code>while cond:</code></li>
+            <li>Control: <code>break</code>, <code>continue</code>, <code>pass</code>, <code>global calls</code></li>
+            <li>Excepciones: <code>raise ValueError("mensaje")</code></li>
+            <li>Múltiples sentencias en una línea separadas por <code>;</code></li>
+          </ul>
+        </div>
+        <div class="subset-box">
+          <h4>2. Asignaciones y Operadores</h4>
+          <ul>
+            <li>Intercambio y desempaquetado: <code>a[i], a[m] = a[m], a[i]</code>, <code>i, j, k = lo, mid+1, lo</code></li>
+            <li>Asignación aumentada: <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>//=</code>, <code>%=</code></li>
+            <li>Aritmética: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, división entera <code>//</code>, módulo <code>%</code>, <code>**</code></li>
+            <li>Comparación (incluye orden lexicográfico de tuplas): <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code></li>
+            <li>Identidad y pertenencia: <code>is None</code>, <code>is not None</code>, <code>in</code>, <code>not in</code></li>
+            <li>Lógicos: <code>and</code>, <code>or</code>, <code>not</code></li>
+          </ul>
+        </div>
+        <div class="subset-box">
+          <h4>3. Estructuras de Datos y Comprehensions</h4>
+          <ul>
+            <li>Listas: <code>[1, 2, 3]</code>, repetición <code>[0] * 10</code>, concatenación <code>a + b</code>, slicing <code>a[lo:hi+1]</code></li>
+            <li>Métodos de <code>list</code>: <code>.append(x)</code>, <code>.pop()</code>, <code>.extend(iter)</code></li>
+            <li>Tuplas: <code>(0, start)</code>, <code>(u, v, w)</code></li>
+            <li>Diccionarios: <code>{"A": [("B", 4)]}</code>, <code>.items()</code>, <code>.keys()</code>, <code>.values()</code></li>
+            <li>Dict &amp; List Comprehensions: <code>{v: float("inf") for v in vertices}</code></li>
+            <li>Conjuntos (<code>set</code>): <code>visited = {start}</code>, <code>set()</code>, <code>.add(x)</code></li>
+          </ul>
+        </div>
+        <div class="subset-box">
+          <h4>4. Módulos y Funciones Built-in</h4>
+          <ul>
+            <li><code>from collections import deque</code>: <code>deque()</code>, <code>.append(x)</code>, <code>.popleft()</code></li>
+            <li><code>import heapq</code>: <code>heapq.heappush(pq, item)</code>, <code>heapq.heappop(pq)</code></li>
+            <li>Built-ins: <code>len()</code>, <code>range(start, stop, step)</code>, <code>min()</code>, <code>max()</code>, <code>sorted()</code>, <code>sum()</code>, <code>abs()</code></li>
+            <li>Conversión y formato: <code>list()</code>, <code>set()</code>, <code>float("inf")</code>, <code>int()</code>, <code>str()</code>, <code>" -&gt; ".join(...)</code></li>
+            <li>Salida e interpolación: <code>print(...)</code> y <code>f"push {value} -&gt; {stack}"</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="examples.js"></script>
+  <script src="interpreter.js"></script>
+  <script src="visualizer.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
