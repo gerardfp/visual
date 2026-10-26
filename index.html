@@ -23,6 +23,10 @@
         <select id="algo-select" class="algo-select" aria-label="Seleccionar algoritmo"></select>
       </label>
 
+      <button type="button" id="btn-algo-info" class="btn btn-secondary" title="Ver información y complejidad del algoritmo seleccionado">
+        ℹ️ Info
+      </button>
+
       <button type="button" id="btn-random-input" class="btn btn-secondary" title="Generar nuevos datos de prueba para este algoritmo">
         🎲 Datos aleatorios
       </button>
@@ -44,6 +48,9 @@
   <!-- Barra de Controles de Ejecución Paso a Paso -->
   <section class="player-bar" aria-label="Controles de ejecución paso a paso">
     <div class="transport-buttons">
+      <button type="button" id="btn-run-code" class="btn btn-accent" title="Compilar cambios del editor y reiniciar ejecución">
+        ⚡ Actualizar y Ejecutar
+      </button>
       <button type="button" id="btn-first" class="btn btn-transport" title="Ir al primer paso (Inicio)">
         ⏮ Inicio
       </button>
@@ -93,26 +100,8 @@
 
   <!-- Contenedor Principal en 2 Columnas -->
   <main class="workspace">
-    <!-- Columna Izquierda: Información del Algoritmo + Editor de Código con Línea Activa -->
+    <!-- Columna Izquierda: Editor de Código con Línea Activa -->
     <section class="code-panel" aria-label="Código Python y ejecución línea a línea">
-      <div class="algo-info-banner">
-        <div class="algo-info-top">
-          <span id="algo-category-badge" class="category-badge">Ordenación</span>
-          <h2 id="algo-title" class="algo-heading">Insertion Sort</h2>
-          <span id="algo-complexity" class="complexity-badge">O(n²)</span>
-        </div>
-        <p id="algo-summary" class="algo-summary"></p>
-      </div>
-
-      <div class="editor-toolbar">
-        <div class="editor-tabs">
-          <span class="editor-tab active-tab">🐍 código.py (Editable · Clic en nº línea = Breakpoint 🔴)</span>
-        </div>
-        <button type="button" id="btn-run-code" class="btn btn-accent">
-          ⚡ Actualizar y Ejecutar
-        </button>
-      </div>
-
       <!-- Estado del paso actual -->
       <div id="step-status-banner" class="step-status-banner" role="status" aria-live="polite">
         <span id="step-line-pill" class="step-line-pill">Línea 1</span>
@@ -175,10 +164,28 @@
     </section>
   </main>
 
-  <!-- Modal Nativo <dialog> con la Especificación del Subset de Python -->
-  <dialog id="subset-dialog" class="subset-dialog">
+  <!-- Modal Nativo <dialog> con la Información del Algoritmo -->
+  <dialog id="algo-info-dialog" class="subset-dialog algo-info-dialog" closedby="any" aria-labelledby="algo-title">
     <div class="dialog-header">
-      <h2>📖 Subset de Python Soportado (Extraído de <code>code.py</code>)</h2>
+      <div class="algo-info-top">
+        <span id="algo-category-badge" class="category-badge">Ordenación</span>
+        <h2 id="algo-title" class="algo-heading">Insertion Sort</h2>
+      </div>
+      <button type="button" id="btn-close-algo-info" class="btn btn-icon" aria-label="Cerrar información del algoritmo">✕</button>
+    </div>
+    <div class="dialog-body scroller">
+      <div class="algo-dialog-meta">
+        <span class="algo-dialog-label">Complejidad:</span>
+        <span id="algo-complexity" class="complexity-badge">O(n²)</span>
+      </div>
+      <p id="algo-summary" class="algo-summary"></p>
+    </div>
+  </dialog>
+
+  <!-- Modal Nativo <dialog> con la Especificación del Subset de Python -->
+  <dialog id="subset-dialog" class="subset-dialog" closedby="any" aria-labelledby="subset-dialog-title">
+    <div class="dialog-header">
+      <h2 id="subset-dialog-title">📖 Subset de Python Soportado (Extraído de <code>code.py</code>)</h2>
       <button type="button" id="btn-close-dialog" class="btn btn-icon" aria-label="Cerrar ventana">✕</button>
     </div>
     <div class="dialog-body scroller">

@@ -4,10 +4,13 @@
 
 (function () {
   const algoSelect = document.getElementById('algo-select');
+  const btnAlgoInfo = document.getElementById('btn-algo-info');
   const btnRandomInput = document.getElementById('btn-random-input');
   const btnResetCode = document.getElementById('btn-reset-code');
   const btnSubsetHelp = document.getElementById('btn-subset-help');
   const btnThemeToggle = document.getElementById('btn-theme-toggle');
+  const algoInfoDialog = document.getElementById('algo-info-dialog');
+  const btnCloseAlgoInfo = document.getElementById('btn-close-algo-info');
   const subsetDialog = document.getElementById('subset-dialog');
   const btnCloseDialog = document.getElementById('btn-close-dialog');
 
@@ -597,7 +600,7 @@
 
   // Atajos de teclado globales (cuando el foco no está escribiendo en el textarea)
   window.addEventListener('keydown', (e) => {
-    if (document.activeElement === codeTextarea || subsetDialog.open) return;
+    if (document.activeElement === codeTextarea || subsetDialog.open || algoInfoDialog.open) return;
     if (e.key === 'ArrowRight') {
       e.preventDefault();
       stopPlayback();
@@ -612,6 +615,15 @@
     }
   });
 
+  // Modal <dialog> Info del Algoritmo
+  btnAlgoInfo.addEventListener('click', () => {
+    algoInfoDialog.showModal();
+  });
+
+  btnCloseAlgoInfo.addEventListener('click', () => {
+    algoInfoDialog.close();
+  });
+
   // Modal <dialog> Subset de Python
   btnSubsetHelp.addEventListener('click', () => {
     subsetDialog.showModal();
@@ -621,11 +633,23 @@
     subsetDialog.close();
   });
 
-  subsetDialog.addEventListener('click', (e) => {
-    if (e.target === subsetDialog) {
-      subsetDialog.close();
-    }
-  });
+  // Fallback para navegadores sin soporte nativo de <dialog closedby="any">
+  if (!('closedBy' in HTMLDialogElement.prototype)) {
+    [algoInfoDialog, subsetDialog].forEach((dialog) => {
+      dialog.addEventListener('click', (event) => {
+        if (event.target !== dialog) return;
+        const rect = dialog.getBoundingClientRect();
+        const isDialogContent = (
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width
+        );
+        if (isDialogContent) return;
+        dialog.close();
+      });
+    });
+  }
 
   // Cambio de tema Claro / Oscuro
   btnThemeToggle.addEventListener('click', () => {
